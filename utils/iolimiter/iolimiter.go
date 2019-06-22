@@ -47,6 +47,20 @@ func NewtConn(c net.Conn, bytesPerSec float64) net.Conn {
 	return s
 }
 
+func NewRateLimitConn(c net.Conn, readLimit, writeLimit float64) net.Conn {
+	s := &conn{
+		Conn: c,
+		r:    c,
+		w:    c,
+		ctx:  context.Background(),
+	}
+	s.readLimiter = rate.NewLimiter(rate.Limit(readLimit), burstLimit)
+	s.readLimiter.AllowN(time.Now(), burstLimit) // spend initial burst
+	s.writeLimiter = rate.NewLimiter(rate.Limit(writeLimit), burstLimit)
+	s.writeLimiter.AllowN(time.Now(), burstLimit) // spend initial burst
+	return s
+}
+
 //NewtRateLimitReaderConn sets rate limit (bytes/sec) to the Conn read.
 func NewReaderConn(c net.Conn, bytesPerSec float64) net.Conn {
 	s := &conn{
