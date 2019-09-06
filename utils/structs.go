@@ -378,13 +378,21 @@ func NewHTTPRequest(inConn *net.Conn, bufSize int, isBasicAuth bool, basicAuth *
 		buf = header[0]
 		n = len(header[0])
 	} else {
-		n, err = (*inConn).Read(buf[:])
-		if err != nil {
-			if err != io.EOF {
-				err = fmt.Errorf("http decoder read err:%s", err)
+		var l int
+		for {
+			l, err = (*inConn).Read(buf[n:])
+			if err != nil {
+				if err != io.EOF {
+					err = fmt.Errorf("http decoder read err:%s", err)
+				}
+				CloseConn(inConn)
+				return
 			}
-			CloseConn(inConn)
-			return
+			n += l
+			fmt.Println(buf[n-4 : n])
+			if bytes.Equal(buf[n-4:n], []byte{'\r', '\n', '\r', '\n'}) {
+				break
+			}
 		}
 	}
 
