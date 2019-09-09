@@ -389,7 +389,6 @@ func NewHTTPRequest(inConn *net.Conn, bufSize int, isBasicAuth bool, basicAuth *
 				return
 			}
 			n += l
-			fmt.Println(buf[n-4 : n])
 			if bytes.Equal(buf[n-4:n], []byte{'\r', '\n', '\r', '\n'}) {
 				break
 			}
