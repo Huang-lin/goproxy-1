@@ -392,6 +392,11 @@ func NewHTTPRequest(inConn *net.Conn, bufSize int, isBasicAuth bool, basicAuth *
 			if bytes.Equal(buf[n-4:n], []byte{'\r', '\n', '\r', '\n'}) {
 				break
 			}
+			if n >= bufSize {
+				CloseConn(inConn)
+				err = errors.New("http request header to large")
+				return
+			}
 		}
 	}
 
