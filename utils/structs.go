@@ -472,12 +472,15 @@ func (req *HTTPRequest) IsHTTPS() bool {
 	return req.Method == "CONNECT"
 }
 
-func (req *HTTPRequest) GetAuthDataStr() (basicInfo string, err error) {
+func (req *HTTPRequest) GetAuthDataStr(allowNull bool) (basicInfo string, err error) {
 	// log.Printf("request :%s", string(req.HeadBuf))
 	authorization := req.getHeader("Proxy-Authorization")
 
 	authorization = strings.Trim(authorization, " \r\n\t")
 	if authorization == "" {
+		if allowNull {
+			return "", nil
+		}
 		fmt.Fprintf((*req.conn), "HTTP/1.1 %s Proxy Authentication Required\r\nProxy-Authenticate: Basic realm=\"\"\r\n\r\nProxy Authentication Required", "407")
 		CloseConn(req.conn)
 		err = errors.New("require auth header data")
@@ -508,7 +511,7 @@ func (req *HTTPRequest) BasicAuth() (err error) {
 	} else {
 		URL = req.getHTTPURL()
 	}
-	user, err := req.GetAuthDataStr()
+	user, err := req.GetAuthDataStr(false)
 	if err != nil {
 		return
 	}
