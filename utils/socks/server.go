@@ -122,25 +122,7 @@ func (s *ServerConn) Handshake() (err error) {
 		return
 	}
 	//log.Printf("%v,s.auth == %v && methodReq.Select(Method_NO_AUTH) %v", methodReq.methods, s.auth, methodReq.Select(Method_NO_AUTH))
-	if s.auth == nil && methodReq.Select(Method_NO_AUTH) && !methodReq.Select(Method_USER_PASS) {
-		// if !methodReq.Select(Method_NO_AUTH) {
-		// 	(*s.conn).SetReadDeadline(time.Now().Add(s.timeout))
-		// 	methodReq.Reply(Method_NONE_ACCEPTABLE)
-		// 	(*s.conn).SetReadDeadline(time.Time{})
-		// 	err = fmt.Errorf("none method found : Method_NO_AUTH")
-		// 	return
-		// }
-		s.method = Method_NO_AUTH
-		//method select reply
-		(*s.conn).SetReadDeadline(time.Now().Add(s.timeout))
-		err = methodReq.Reply(Method_NO_AUTH)
-		(*s.conn).SetReadDeadline(time.Time{})
-		if err != nil {
-			err = fmt.Errorf("reply answer data fail,ERR: %s", err)
-			return
-		}
-		// err = fmt.Errorf("% x", methodReq.Bytes())
-	} else {
+	if s.auth != nil && methodReq.Select(Method_USER_PASS) {
 		//auth
 		if !methodReq.Select(Method_USER_PASS) {
 			(*s.conn).SetReadDeadline(time.Now().Add(s.timeout))
@@ -194,6 +176,24 @@ func (s *ServerConn) Handshake() (err error) {
 			err = fmt.Errorf("auth fail from %s", remoteAddr)
 			return
 		}
+	} else {
+		// if !methodReq.Select(Method_NO_AUTH) {
+		// 	(*s.conn).SetReadDeadline(time.Now().Add(s.timeout))
+		// 	methodReq.Reply(Method_NONE_ACCEPTABLE)
+		// 	(*s.conn).SetReadDeadline(time.Time{})
+		// 	err = fmt.Errorf("none method found : Method_NO_AUTH")
+		// 	return
+		// }
+		s.method = Method_NO_AUTH
+		//method select reply
+		(*s.conn).SetReadDeadline(time.Now().Add(s.timeout))
+		err = methodReq.Reply(Method_NO_AUTH)
+		(*s.conn).SetReadDeadline(time.Time{})
+		if err != nil {
+			err = fmt.Errorf("reply answer data fail,ERR: %s", err)
+			return
+		}
+		// err = fmt.Errorf("% x", methodReq.Bytes())
 	}
 	//request detail
 	(*s.conn).SetReadDeadline(time.Now().Add(s.timeout))
