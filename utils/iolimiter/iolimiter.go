@@ -32,6 +32,18 @@ type conn struct {
 	ctx          context.Context
 }
 
+func NewConnWithLimiter(c net.Conn, readLimiter, writeLimiter *rate.Limiter) net.Conn {
+	s := &conn{
+		Conn: c,
+		r:    c,
+		w:    c,
+		ctx:  context.Background(),
+	}
+	s.readLimiter = readLimiter
+	s.writeLimiter = writeLimiter
+	return s
+}
+
 //NewtRateLimitConn sets rate limit (bytes/sec) to the Conn read and write.
 func NewtConn(c net.Conn, bytesPerSec float64) net.Conn {
 	s := &conn{
